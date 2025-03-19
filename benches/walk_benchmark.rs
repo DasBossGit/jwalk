@@ -51,33 +51,62 @@ fn walk_benches(c: &mut Criterion) {
         b.iter(|| for _ in WalkDir::new(big_dir()) {})
     });
 
-    c.bench_function(format!("jwalk (sorted, {} threads)"::std::env::var("NUMBER_OF_PROCESSORS").map_or_else(
-        |_| {
-            std::thread::available_parallelism()
-                .map(|threads| threads.get())
-                .unwrap_or(16)
+    c.bench_function(
+        format!(
+            "jwalk (sorted, {} threads)",
+            ::std::env::var("NUMBER_OF_PROCESSORS").map_or_else(
+                |_| {
+                    std::thread::available_parallelism()
+                        .map(|threads| threads.get())
+                        .unwrap_or(16)
+                },
+                |env_threads| env_threads.parse::<usize>().unwrap_or(16),
+            )
+        )
+        .as_str(),
+        |b| {
+            b.iter(|| {
+                for _ in WalkDir::new(big_dir())
+                    .parallelism(Parallelism::RayonNewPool(
+                        ::std::env::var("NUMBER_OF_PROCESSORS").map_or_else(
+                            |_| {
+                                std::thread::available_parallelism()
+                                    .map(|threads| threads.get())
+                                    .unwrap_or(16)
+                            },
+                            |env_threads| env_threads.parse::<usize>().unwrap_or(16),
+                        ),
+                    ))
+                    .sort(true)
+                {}
+            })
         },
-        |env_threads| env_threads.parse::<usize>().unwrap_or(16),
-    )), |b| {
-        b.iter(|| {
-            for _ in WalkDir::new(big_dir())
-                .parallelism(Parallelism::RayonNewPool(
-                    ::std::env::var("NUMBER_OF_PROCESSORS").map_or_else(
-                        |_| {
-                            std::thread::available_parallelism()
-                                .map(|threads| threads.get())
-                                .unwrap_or(16)
-                        },
-                        |env_threads| env_threads.parse::<usize>().unwrap_or(16),
-                    ),
-                ))
-                .sort(true)
-            {}
-        })
-    });
+    );
 
-    c.bench_function("jwalk (unsorted, n threads)", |b| {
-        b.iter(|| for _ in WalkDir::new(big_dir()) {})
+    c.bench_function(format!(
+        "jwalk (unsorted, {} threads)",
+        ::std::env::var("NUMBER_OF_PROCESSORS").map_or_else(
+            |_| {
+                std::thread::available_parallelism()
+                    .map(|threads| threads.get())
+                    .unwrap_or(16)
+            },
+            |env_threads| env_threads.parse::<usize>().unwrap_or(16),
+        )
+    )
+    .as_str(), |b| {
+        b.iter(|| {
+            for _ in WalkDir::new(big_dir()).parallelism(Parallelism::RayonNewPool(
+                ::std::env::var("NUMBER_OF_PROCESSORS").map_or_else(
+                    |_| {
+                        std::thread::available_parallelism()
+                            .map(|threads| threads.get())
+                            .unwrap_or(16)
+                    },
+                    |env_threads| env_threads.parse::<usize>().unwrap_or(16),
+                ),
+            )) {}
+        })
     });
 
     c.bench_function("jwalk (sorted, n threads)", |b| {
