@@ -120,7 +120,7 @@ fn walk_benches(c: &mut Criterion) {
                     |env_threads| env_threads.parse::<usize>().unwrap_or(16),
                 )
                 .mul(3) as u32)
-                .div_ceil(4) as usize
+                .div_ceil(2) as usize
         )
         .as_str(),
         |b| {
@@ -137,7 +137,7 @@ fn walk_benches(c: &mut Criterion) {
                                 |env_threads| env_threads.parse::<usize>().unwrap_or(16),
                             )
                             .mul(3) as u32)
-                            .div_ceil(4) as usize,
+                            .div_ceil(2) as usize,
                     ))
                     .sort(true)
                 {}
@@ -158,7 +158,7 @@ fn walk_benches(c: &mut Criterion) {
                     |env_threads| env_threads.parse::<usize>().unwrap_or(16),
                 )
                 .mul(3) as u32)
-                .div_ceil(4) as usize
+                .div_ceil(2) as usize
         )
         .as_str(),
         |b| {
@@ -174,7 +174,7 @@ fn walk_benches(c: &mut Criterion) {
                             |env_threads| env_threads.parse::<usize>().unwrap_or(16),
                         )
                         .mul(3) as u32)
-                        .div_ceil(4) as usize,
+                        .div_ceil(2) as usize,
                 )) {}
             })
         },
@@ -391,7 +391,7 @@ fn rayon_recursive_descent(
 
 criterion_group! {
   name = benches;
-  config = Criterion::default().sample_size(10);
+  config = Criterion::default().sample_size(10).warm_up_time(std::time::Duration::from_millis(200)).measurement_time(std::time::Duration::from_millis(5000));
   targets = walk_benches
 }
 
