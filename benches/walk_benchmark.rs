@@ -78,10 +78,6 @@ fn walk_benches(c: &mut Criterion) {
         },
     );
 
-    c.bench_function("jwalk (unsorted, n threads)", |b| {
-        b.iter(|| for _ in WalkDir::new(big_dir()) {})
-    });
-
     c.bench_function(
         format!(
             "jwalk (unsorted, {} threads)",
@@ -113,6 +109,10 @@ fn walk_benches(c: &mut Criterion) {
 
     c.bench_function("jwalk (sorted, n threads)", |b| {
         b.iter(|| for _ in WalkDir::new(big_dir()).sort(true) {})
+    });
+
+    c.bench_function("jwalk (unsorted, n threads)", |b| {
+        b.iter(|| for _ in WalkDir::new(big_dir()) {})
     });
 
     c.bench_function("jwalk (sorted, metadata, n threads)", |b| {
