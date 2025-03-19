@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
+use ::std::ops::Mul;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use ignore::WalkBuilder;
 use jwalk::{Error, Parallelism, WalkDir, WalkDirGeneric};
@@ -102,6 +103,78 @@ fn walk_benches(c: &mut Criterion) {
                         },
                         |env_threads| env_threads.parse::<usize>().unwrap_or(16),
                     ),
+                )) {}
+            })
+        },
+    );
+    c.bench_function(
+        format!(
+            "jwalk (sorted, {} threads)",
+            (::std::env::var("NUMBER_OF_PROCESSORS")
+                .map_or_else(
+                    |_| {
+                        std::thread::available_parallelism()
+                            .map(|threads| threads.get())
+                            .unwrap_or(16)
+                    },
+                    |env_threads| env_threads.parse::<usize>().unwrap_or(16),
+                )
+                .mul(3) as u32)
+                .div_ceil(4) as usize
+        )
+        .as_str(),
+        |b| {
+            b.iter(|| {
+                for _ in WalkDir::new(big_dir())
+                    .parallelism(Parallelism::RayonNewPool(
+                        (::std::env::var("NUMBER_OF_PROCESSORS")
+                            .map_or_else(
+                                |_| {
+                                    std::thread::available_parallelism()
+                                        .map(|threads| threads.get())
+                                        .unwrap_or(16)
+                                },
+                                |env_threads| env_threads.parse::<usize>().unwrap_or(16),
+                            )
+                            .mul(3) as u32)
+                            .div_ceil(4) as usize,
+                    ))
+                    .sort(true)
+                {}
+            })
+        },
+    );
+
+    c.bench_function(
+        format!(
+            "jwalk (unsorted, {} threads)",
+            (::std::env::var("NUMBER_OF_PROCESSORS")
+                .map_or_else(
+                    |_| {
+                        std::thread::available_parallelism()
+                            .map(|threads| threads.get())
+                            .unwrap_or(16)
+                    },
+                    |env_threads| env_threads.parse::<usize>().unwrap_or(16),
+                )
+                .mul(3) as u32)
+                .div_ceil(4) as usize
+        )
+        .as_str(),
+        |b| {
+            b.iter(|| {
+                for _ in WalkDir::new(big_dir()).parallelism(Parallelism::RayonNewPool(
+                    (::std::env::var("NUMBER_OF_PROCESSORS")
+                        .map_or_else(
+                            |_| {
+                                std::thread::available_parallelism()
+                                    .map(|threads| threads.get())
+                                    .unwrap_or(16)
+                            },
+                            |env_threads| env_threads.parse::<usize>().unwrap_or(16),
+                        )
+                        .mul(3) as u32)
+                        .div_ceil(4) as usize,
                 )) {}
             })
         },
